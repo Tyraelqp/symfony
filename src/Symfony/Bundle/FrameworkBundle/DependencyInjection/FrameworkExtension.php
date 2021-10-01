@@ -110,6 +110,7 @@ use Symfony\Component\Mime\Header\Headers;
 use Symfony\Component\Mime\MimeTypeGuesserInterface;
 use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\Notifier\Bridge\AllMySms\AllMySmsTransportFactory;
+use Symfony\Component\Notifier\Bridge\AmazonSns\AmazonSnsTransportFactory;
 use Symfony\Component\Notifier\Bridge\Clickatell\ClickatellTransportFactory;
 use Symfony\Component\Notifier\Bridge\Discord\DiscordTransportFactory;
 use Symfony\Component\Notifier\Bridge\Esendex\EsendexTransportFactory;
@@ -145,6 +146,7 @@ use Symfony\Component\Notifier\Bridge\SpotHit\SpotHitTransportFactory;
 use Symfony\Component\Notifier\Bridge\Telegram\TelegramTransportFactory;
 use Symfony\Component\Notifier\Bridge\Telnyx\TelnyxTransportFactory;
 use Symfony\Component\Notifier\Bridge\Twilio\TwilioTransportFactory;
+use Symfony\Component\Notifier\Bridge\Yunpian\YunpianTransportFactory;
 use Symfony\Component\Notifier\Bridge\Zulip\ZulipTransportFactory;
 use Symfony\Component\Notifier\Notifier;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -1139,7 +1141,7 @@ class FrameworkExtension extends Extension
         if ($config['version_strategy']) {
             $defaultVersion = new Reference($config['version_strategy']);
         } else {
-            $defaultVersion = $this->createVersion($container, $config['version'], $config['version_format'], $config['json_manifest_path'], '_default');
+            $defaultVersion = $this->createVersion($container, $config['version'], $config['version_format'], $config['json_manifest_path'], '_default', $config['strict_mode']);
         }
 
         $defaultPackage = $this->createPackageDefinition($config['base_path'], $config['base_urls'], $defaultVersion);
@@ -1155,7 +1157,7 @@ class FrameworkExtension extends Extension
                 // let format fallback to main version_format
                 $format = $package['version_format'] ?: $config['version_format'];
                 $version = $package['version'] ?? null;
-                $version = $this->createVersion($container, $version, $format, $package['json_manifest_path'], $name);
+                $version = $this->createVersion($container, $version, $format, $package['json_manifest_path'], $name, $package['strict_mode']);
             }
 
             $packageDefinition = $this->createPackageDefinition($package['base_path'], $package['base_urls'], $version)
@@ -1184,7 +1186,7 @@ class FrameworkExtension extends Extension
         return $package;
     }
 
-    private function createVersion(ContainerBuilder $container, ?string $version, ?string $format, ?string $jsonManifestPath, string $name): Reference
+    private function createVersion(ContainerBuilder $container, ?string $version, ?string $format, ?string $jsonManifestPath, string $name, bool $strictMode): Reference
     {
         // Configuration prevents $version and $jsonManifestPath from being set
         if (null !== $version) {
@@ -1201,6 +1203,7 @@ class FrameworkExtension extends Extension
         if (null !== $jsonManifestPath) {
             $def = new ChildDefinition('assets.json_manifest_version_strategy');
             $def->replaceArgument(0, $jsonManifestPath);
+            $def->replaceArgument(2, $strictMode);
             $container->setDefinition('assets._version_'.$name, $def);
 
             return new Reference('assets._version_'.$name);
@@ -1322,7 +1325,7 @@ class FrameworkExtension extends Extension
                     'scanned_directories' => $scannedDirectories = array_merge($dirs, $nonExistingDirs),
                     'cache_vary' => [
                         'scanned_directories' => array_map(static function (string $dir) use ($projectDir): string {
-                            return 0 === strpos($dir, $projectDir.'/') ? substr($dir, 1 + \strlen($projectDir)) : $dir;
+                            return str_starts_with($dir, $projectDir.'/') ? substr($dir, 1 + \strlen($projectDir)) : $dir;
                         }, $scannedDirectories),
                     ],
                 ]
@@ -2420,6 +2423,7 @@ class FrameworkExtension extends Extension
 
         $classToServices = [
             AllMySmsTransportFactory::class => 'notifier.transport_factory.allmysms',
+            AmazonSnsTransportFactory::class => 'notifier.transport_factory.amazonsns',
             ClickatellTransportFactory::class => 'notifier.transport_factory.clickatell',
             DiscordTransportFactory::class => 'notifier.transport_factory.discord',
             EsendexTransportFactory::class => 'notifier.transport_factory.esendex',
@@ -2455,6 +2459,7 @@ class FrameworkExtension extends Extension
             TelegramTransportFactory::class => 'notifier.transport_factory.telegram',
             TelnyxTransportFactory::class => 'notifier.transport_factory.telnyx',
             TwilioTransportFactory::class => 'notifier.transport_factory.twilio',
+            YunpianTransportFactory::class => 'notifier.transport_factory.yunpian',
             ZulipTransportFactory::class => 'notifier.transport_factory.zulip',
         ];
 
@@ -2462,6 +2467,7 @@ class FrameworkExtension extends Extension
 
         foreach ($classToServices as $class => $service) {
             switch ($package = substr($service, \strlen('notifier.transport_factory.'))) {
+                case 'amazonsns': $package = 'amazon-sns'; break;
                 case 'fakechat': $package = 'fake-chat'; break;
                 case 'fakesms': $package = 'fake-sms'; break;
                 case 'freemobile': $package = 'free-mobile'; break;

@@ -167,9 +167,9 @@ class AnnotationsCacheWarmerTest extends TestCase
     }
 
     /**
-     * @return MockObject|Reader
+     * @return MockObject&Reader
      */
-    private function getReadOnlyReader(): object
+    private function getReadOnlyReader(): Reader
     {
         $readerMock = $this->createMock(Reader::class);
         $readerMock->expects($this->exactly(0))->method('getClassAnnotations');
