@@ -1,5 +1,5 @@
 <p align="center"><a href="https://symfony.com" target="_blank">
-    <img src="https://symfony.com/logos/symfony_black_02.svg">
+    <img src="https://symfony.com/logos/symfony_black_02.svg?a=1">
 </a></p>
 
 [Symfony][1] is a **PHP framework** for web and console applications and a set
