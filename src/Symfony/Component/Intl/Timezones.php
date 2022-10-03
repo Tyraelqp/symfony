@@ -119,6 +119,6 @@ final class Timezones extends ResourceBundle
 
     protected static function getPath(): string
     {
-        return Intl::getDataDirectory().'/'.Intl::TIMEZONE_DIR;
+        return Intl::getDataDirectory() . '/' . Intl::TIMEZONE_DIR;
     }
 }
