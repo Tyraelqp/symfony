@@ -30,8 +30,6 @@ class MessageBus implements MessageBusInterface
     {
         if ($middlewareHandlers instanceof \IteratorAggregate) {
             $this->middlewareAggregate = $middlewareHandlers;
-        } elseif (\is_array($middlewareHandlers)) {
-            $this->middlewareAggregate = new \ArrayObject($middlewareHandlers);
         } else {
             // $this->middlewareAggregate should be an instance of IteratorAggregate.
             // When $middlewareHandlers is an Iterator, we wrap it to ensure it is lazy-loaded and can be rewound.
