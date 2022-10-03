@@ -68,6 +68,7 @@ class RateLimit
     public function wait(): void
     {
         $delta = $this->retryAfter->getTimestamp() - time();
+
         if ($delta <= 0) {
             return;
         }

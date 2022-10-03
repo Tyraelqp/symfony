@@ -30,7 +30,6 @@ interface HttpClientInterface
                                 //   password as the second one; or string like username:password - enabling HTTP Basic
                                 //   authentication (RFC 7617)
         'auth_bearer' => null,  // string - a token enabling HTTP Bearer authorization (RFC 6750)
-        'query' => [],          // string[] - associative array of query string values to merge with the request's URL
         'headers' => [],        // iterable|string[]|string[][] - headers names provided as keys or as part of values
         'body' => '',           // array|string|resource|\Traversable|\Closure - the callback SHOULD yield a string
                                 //   smaller than the amount requested as argument; the empty string signals EOF; if
