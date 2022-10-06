@@ -2931,3 +2931,4 @@ The Symfony Connect username in parenthesis allows to get more information
  - Vladislav Vlastovskiy (vlastv)
  - RENAUDIN Xavier (xorrox)
  - Yannick Vanhaeren (yvh)
+ - Radu Aftinescu (zullkas)
