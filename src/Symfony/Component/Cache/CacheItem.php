@@ -27,8 +27,8 @@ final class CacheItem implements ItemInterface
     protected $value;
     protected $isHit = false;
     protected $expiry;
-    protected $metadata = [];
-    protected $newMetadata = [];
+    protected array $metadata = [];
+    protected array $newMetadata = [];
     protected $innerItem;
     protected $poolHash;
     protected $isTaggable = false;
