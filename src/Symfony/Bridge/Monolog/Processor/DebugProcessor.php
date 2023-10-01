@@ -43,6 +43,7 @@ class DebugProcessor implements DebugLoggerInterface, ResetInterface
         $this->records[$hash][] = [
             'timestamp' => $timestamp,
             'timestamp_rfc3339' => $timestampRfc3339,
+            'timestamp_rfc3331' => $timestamp * 1000,
             'message' => $record['message'],
             'priority' => $record['level'],
             'priorityName' => $record['level_name'],
