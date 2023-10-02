@@ -157,7 +157,7 @@ class ProfilerController
             // the profiler is not enabled
         }
 
-        return $this->renderWithCspNonces($request, '@WebProfiler/Profiler/toolbar.html.twig', [
+        return $this->renderWithCspNonces($request, [
             'request' => $request,
             'profile' => $profile,
             'templates' => $this->getTemplateManager()->getNames($profile),
@@ -174,7 +174,7 @@ class ProfilerController
      *
      * @throws NotFoundHttpException
      */
-    public function searchBarAction(Request $request)
+    public function searchBarAction(Request $request): Response
     {
         $this->denyAccessIfProfilerDisabled();
 
@@ -320,7 +320,7 @@ class ProfilerController
      *
      * @throws NotFoundHttpException
      */
-    public function phpinfoAction()
+    public function phpinfoAction(): Response
     {
         $this->denyAccessIfProfilerDisabled();
 
@@ -373,7 +373,7 @@ class ProfilerController
      *
      * @return TemplateManager The Template Manager
      */
-    protected function getTemplateManager()
+    protected function getTemplateManager(): TemplateManager
     {
         if (null === $this->templateManager) {
             $this->templateManager = new TemplateManager($this->profiler, $this->twig, $this->templates);
@@ -382,7 +382,7 @@ class ProfilerController
         return $this->templateManager;
     }
 
-    private function denyAccessIfProfilerDisabled()
+    private function denyAccessIfProfilerDisabled(): void
     {
         if (null === $this->profiler) {
             throw new NotFoundHttpException('The profiler must be enabled.');
@@ -391,7 +391,12 @@ class ProfilerController
         $this->profiler->disable();
     }
 
-    private function renderWithCspNonces(Request $request, string $template, array $variables, int $code = 200, array $headers = ['Content-Type' => 'text/html']): Response
+    private function renderWithCspNonces(
+        Request $request,
+        array $variables,
+        int $code = 200,
+        array $headers = ['Content-Type' => 'text/html']
+    ): Response
     {
         $response = new Response('', $code, $headers);
 
@@ -400,7 +405,7 @@ class ProfilerController
         $variables['csp_script_nonce'] = $nonces['csp_script_nonce'] ?? null;
         $variables['csp_style_nonce'] = $nonces['csp_style_nonce'] ?? null;
 
-        $response->setContent($this->twig->render($template, $variables));
+        $response->setContent($this->twig->render('@WebProfiler/Profiler/toolbar.html.twig', $variables));
 
         return $response;
     }
