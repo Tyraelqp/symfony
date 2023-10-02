@@ -14,6 +14,7 @@ namespace Symfony\Component\Asset\VersionStrategy;
 use Symfony\Component\Asset\Exception\AssetNotFoundException;
 use Symfony\Component\Asset\Exception\LogicException;
 use Symfony\Component\Asset\Exception\RuntimeException;
+use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -31,10 +32,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class JsonManifestVersionStrategy implements VersionStrategyInterface
 {
-    private $manifestPath;
+    private string $manifestPath;
     private $manifestData;
     private $httpClient;
-    private $strictMode;
+    private bool $strictMode;
 
     /**
      * @param string $manifestPath Absolute path to the manifest file
@@ -55,13 +56,17 @@ class JsonManifestVersionStrategy implements VersionStrategyInterface
      * With a manifest, we don't really know or care about what
      * the version is. Instead, this returns the path to the
      * versioned file.
+     * @throws JsonException
      */
-    public function getVersion(string $path)
+    public function getVersion(string $path): string
     {
         return $this->applyVersion($path);
     }
 
-    public function applyVersion(string $path)
+    /**
+     * @throws JsonException
+     */
+    public function applyVersion(string $path): string
     {
         return $this->getManifestPath($path) ?: $path;
     }
@@ -84,7 +89,12 @@ class JsonManifestVersionStrategy implements VersionStrategyInterface
                     throw new RuntimeException(sprintf('Asset manifest file "%s" does not exist.', $this->manifestPath));
                 }
 
-                $this->manifestData = json_decode(file_get_contents($this->manifestPath), true);
+                $this->manifestData = json_decode(
+                    file_get_contents($this->manifestPath),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
+                );
                 if (0 < json_last_error()) {
                     throw new RuntimeException(sprintf('Error parsing JSON from asset manifest file "%s": ', $this->manifestPath).json_last_error_msg());
                 }
