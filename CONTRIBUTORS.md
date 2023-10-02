@@ -543,7 +543,7 @@ The Symfony Connect username in parenthesis allows to get more information
  - Philipp Kräutli (pkraeutli)
  - Grzegorz Zdanowski (kiler129)
  - Kirill chEbba Chebunin (chebba)
- - 
+ -
  - Matthew Grasmick
  - Greg Thornton (xdissent)
  - BENOIT POLASZEK (bpolaszek)
@@ -2932,3 +2932,4 @@ The Symfony Connect username in parenthesis allows to get more information
  - RENAUDIN Xavier (xorrox)
  - Yannick Vanhaeren (yvh)
  - Radu Aftinescu (zullkas)
+ - Denis Tolkanita (denistolkanita)
