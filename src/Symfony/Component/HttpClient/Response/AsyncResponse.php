@@ -16,11 +16,15 @@ use Symfony\Component\HttpClient\Chunk\FirstChunk;
 use Symfony\Component\HttpClient\Chunk\LastChunk;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Contracts\HttpClient\ChunkInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use Throwable;
 
 /**
  * Provides a single extension point to process a response's content stream.
@@ -36,13 +40,14 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
 
     private $client;
     private $response;
-    private $info = ['canceled' => false];
+    private array $info = ['canceled' => false];
     private $passthru;
     private $stream;
     private $yieldedState;
 
     /**
      * @param ?callable(ChunkInterface, AsyncContext): ?\Iterator $passthru
+     * @throws TransportExceptionInterface
      */
     public function __construct(HttpClientInterface $client, string $method, string $url, array $options, callable $passthru = null)
     {
@@ -96,6 +101,13 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
         return $this->response->getStatusCode();
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws Throwable
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
     public function getHeaders(bool $throw = true): array
     {
         if ($this->initializer) {
@@ -343,7 +355,7 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
                     $r->stream = null;
                     break;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 unset($asyncMap[$response]);
                 $r->stream = null;
                 $r->info['error'] = $e->getMessage();
@@ -431,7 +443,7 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
         }
     }
 
-    private function openBuffer(): ?\Throwable
+    private function openBuffer(): ?Throwable
     {
         if (null === $shouldBuffer = $this->shouldBuffer) {
             throw new \LogicException('A chunk passthru cannot yield more than one "isFirst()" chunk.');
@@ -446,7 +458,7 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
                 if (null !== $e = $this->response->getInfo('error')) {
                     throw new TransportException($e);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->info['error'] = $e->getMessage();
                 $this->response->cancel();
             }
